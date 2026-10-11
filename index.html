@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>HRDK UBT - READING TEST (20 Qs)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Pyidaungsu:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', 'Pyidaungsu', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { 
+            background: linear-gradient(135deg, #f0f4f8 0%, #d9e2ec 100%);
+            color: #1e293b; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 12px; user-select: none;
+        }
+        .ubt-card { 
+            background: #ffffff; border-radius: 20px; width: 100%; max-width: 460px; border: 1px solid #cbd5e1;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08), 0 20px 40px rgba(0, 0, 0, 0.05); overflow: hidden; display: flex; flex-direction: column; position: relative; 
+        }
+        .ubt-top-banner {
+            background: #1e3a8a; color: #ffffff; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; font-weight: 800;
+        }
+        .header-logo { height: 28px; width: auto; object-fit: contain; background: #ffffff; padding: 2px 6px; border-radius: 4px; }
+        .header-title-text { text-align: center; letter-spacing: 0.5px; flex-grow: 1; font-size: 0.78rem; }
+        .header-banner img { width: 100%; height: auto; display: block; }
+        .title-container { padding: 12px 20px 4px 20px; text-align: center; }
+        .title-text { font-size: 0.85rem; font-weight: 800; line-height: 1.4; color: #475569; }
+        .login-bottom-logos {
+            display: flex; justify-content: center; align-items: center; gap: 15px; padding: 5px 20px 15px 20px; border-bottom: 1px solid #f1f5f9; margin-bottom: 5px;
+        }
+        .login-bottom-logos img { height: 32px; width: auto; object-fit: contain; border-radius: 6px; border: 1px solid #e2e8f0; background: #fff; padding: 2px; }
+        #welcome-screen, #exam-ui, #result-screen, #review-screen, #explanation-screen { width: 100%; display: none; }
+        #welcome-screen { display: block; }
+        .input-group { padding: 8px 20px 10px 20px; }
+        .info-label { font-size: 0.72rem; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 5px; }
+        .form-input, .form-select { 
+            width: 100%; padding: 12px 14px; border: 1.5px solid #cbd5e1; border-radius: 12px; font-size: 0.9rem; font-weight: 700; color: #0f172a; outline: none; background: #f8fafc; transition: all 0.2s;
+        }
+        .form-input:focus, .form-select:focus { border-color: #2563eb; background: #ffffff; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+        .action-container { padding: 10px 20px 24px 20px; }
+        .btn-confirm { 
+            width: 100%; padding: 14px; border: none; border-radius: 12px; background: #16a34a; color: #ffffff; font-size: 0.95rem; font-weight: 900; cursor: pointer; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+        }
+        .btn-confirm:hover { background: #15803d; }
+        #exam-ui { padding: 16px; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; background: #1e3a8a; color: #ffffff; padding: 10px 16px; border-radius: 10px; margin-bottom: 8px; font-size: 11px; font-weight: 800; }
+        
+        /* ရထားတွဲလို ဖြေးဖြေးချင်း ရွေ့သွားသော စာတန်း (Marquee Effect) အတွက် CSS */
+        .marquee-container {
+            overflow: hidden;
+            white-space: nowrap;
+            width: 100%;
+            background: #0f172a;
+            color: #38bdf8;
+            padding: 6px 0;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            font-size: 11px;
+            font-weight: 800;
+        }
+        .marquee-text {
+            display: inline-block;
+            padding-left: 100%;
+            animation: marquee 14s linear infinite;
+        }
+        @keyframes marquee {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(-100%, 0); }
+        }
+
+        .timer-badge { padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: 900; background: rgba(255, 255, 255, 0.2); }
+        .progress-box { width: 100%; height: 6px; background: #e2e8f0; border-radius: 10px; margin-bottom: 12px; overflow: hidden; }
+        .progress-fill { height: 100%; width: 100%; background: #2563eb; transition: width 1s linear; }
+        .q-palette { display: flex; gap: 4px; justify-content: center; margin-bottom: 12px; flex-wrap: wrap; }
+        .q-dot { width: 26px; height: 26px; border-radius: 6px; border: 1px solid #cbd5e1; display: flex; align-items: center; justify-content: center; font-size: 10.5px; font-weight: 800; cursor: pointer; background: #fff; color: #64748b; }
+        .q-dot.active { border-color: #2563eb; background: #2563eb; color: #ffffff; }
+        .q-dot.done { background: #dcfce7; border-color: #22c55e; color: #15803d; }
+        .q-text { font-size: 13.5px; font-weight: 700; margin-bottom: 14px; line-height: 1.6; background: #f8fafc; padding: 14px; border-radius: 12px; border: 1px solid #e2e8f0; color: #0f172a; white-space: pre-line; position: relative; }
+        .answer-zone { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+        .opt-item { background: #fff; border: 1.5px solid #cbd5e1; padding: 12px 14px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; font-size: 12.5px; font-weight: 700; transition: all 0.15s ease; }
+        .opt-item:hover { border-color: #2563eb; background: #f0fdfa; }
+        .opt-item.active { background: #eff6ff; border-color: #2563eb; color: #1d4ed8; font-weight: 800; }
+        .opt-num { width: 22px; height: 22px; border: 1.5px solid currentColor; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 10px; font-size: 11px; flex-shrink: 0; }
+        .nav-controls { display: flex; gap: 8px; margin-bottom: 10px; }
+        .btn-nav { flex: 1; padding: 11px; border-radius: 8px; border: 1px solid #cbd5e1; background: #f8fafc; font-size: 12px; font-weight: 700; cursor: pointer; }
+        .btn-submit { background: #1e3a8a; color: #ffffff; border: none; padding: 13px; border-radius: 10px; font-size: 13px; font-weight: 900; cursor: pointer; width: 100%; }
+        .result-hud { padding: 16px 20px; display: flex; flex-direction: column; align-items: center; }
+        .final-res-title { font-size: 1.2rem; font-weight: 900; color: #1e3a8a; margin-bottom: 12px; letter-spacing: 1px; }
+        .res-table { width: 100%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px; margin-bottom: 16px; }
+        .res-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 12.5px; font-weight: 700; border-bottom: 1px dashed #cbd5e1; }
+        .res-row:last-child { border-bottom: none; }
+        .res-label { color: #64748b; } .res-val { color: #0f172a; font-weight: 800; }
+        .score-circle { width: 90px; height: 90px; border-radius: 50%; background: #eff6ff; border: 4px solid #2563eb; display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 14px; }
+        .score-num { font-size: 1.4rem; font-weight: 900; color: #1d4ed8; line-height: 1; }
+        .score-lbl { font-size: 0.6rem; font-weight: 800; color: #64748b; margin-top: 2px; }
+        .res-action-grid { display: flex; gap: 8px; width: 100%; margin-top: 6px; }
+        .btn-compact-res { flex: 1; padding: 12px; border-radius: 10px; font-size: 12px; font-weight: 900; cursor: pointer; text-align: center; border: none; }
+        .btn-review-mini { background: #1e3a8a; color: #ffffff; }
+        .btn-exp-mini { background: #0284c7; color: #ffffff; }
+        .btn-restart-mini { background: #2563eb; color: #ffffff; width: 100%; }
+        #explanation-screen { padding: 16px; max-height: 85vh; overflow-y: auto; }
+        .exp-item { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px; margin-bottom: 14px; font-size: 12px; }
+        .exp-q-title { font-weight: 900; color: #1e3a8a; margin-bottom: 6px; font-size: 13px; }
+        .exp-detail { margin-top: 8px; padding-top: 8px; border-top: 1px dashed #cbd5e1; line-height: 1.5; color: #334155; }
+        .exp-correct { color: #15803d; font-weight: 800; }
+        .exp-wrong { color: #b91c1c; font-weight: 700; }
+    </style>
+</head>
+<body>
+    <div class="ubt-card">
+        <!-- Welcome Screen -->
+        <div id="welcome-screen">
+            <div class="ubt-top-banner">
+                <img src="https://i.imgur.com/WA5hd3D.jpeg" alt="Gxoker Logo" class="header-logo">
+                <span class="header-title-text">HRDK UBT - READING TEST (20 Qs)</span>
+                <img src="https://i.imgur.com/WA5hd3D.jpeg" alt="Gxoker Logo" class="header-logo">
+            </div>
+            <div class="header-banner"><img src="https://i.imgur.com/fq28vPm.jpeg" alt="Banner"></div>
+            <div class="title-container"><div class="title-text">Created By Gxoker EPS-TOPIK 읽기 (20ပုဒ်စာ) စာမေးပွဲ</div></div>
+            <div class="login-bottom-logos">
+                <img src="https://i.imgur.com/WA5hd3D.jpeg" alt="Gxoker">
+                <img src="https://i.imgur.com/WA5hd3D.jpeg" alt="Gxoker">
+            </div>
+            <div class="input-group">
+                <div class="info-label">NAME (အမည်)</div>
+                <input type="text" id="username-field" class="form-input" placeholder="သင့်နာမည်..." autocomplete="off">
+            </div>
+            <div class="input-group">
+                <div class="info-label">PASSPORT (နိုင်ငံကူးလက်မှတ်)</div>
+                <input type="text" id="passport-field" class="form-input" placeholder="ဥပမာ- MH-3568**" autocomplete="off">
+            </div>
+            <div class="input-group">
+                <div class="info-label">SECTOR (လုပ်ငန်းခွင်)</div>
+                <select id="sector-field" class="form-select">
+                    <option value="Manufacturing (제조업)">Manufacturing (제조업) - ထုတ်လုပ်ရေး</option>
+                    <option value="Agriculture (농축산업)">Agriculture (농축산업) - စိုက်ပျိုးမွေးမြူရေး</option>
+                    <option value="Construction (건설업)">Construction (건설업) - ဆောက်လုပ်ရေး</option>
+                    <option value="Fishery (어업)">Fishery (어업) - ရေလုပ်ငန်း</option>
+                    <option value="Service (서비스업)">Service (서비스업) - ဝန်ဆောင်မှုလုပ်ငန်း</option>
+                </select>
+            </div>
+            <div class="action-container"><button class="btn-confirm" onclick="triggerExam()">CONFIRM & START</button></div>
+        </div>
+
+        <!-- Exam UI -->
+        <div id="exam-ui">
+            <div class="ubt-top-banner" style="margin-bottom: 6px; border-radius: 8px;">
+                <img src="https://i.imgur.com/WA5hd3D.jpeg" alt="Gxoker Logo" class="header-logo">
+                <span class="header-title-text">HRDK UBT READING EXAM</span>
+                <img src="https://i.imgur.com/WA5hd3D.jpeg" alt="Gxoker Logo" class="header-logo">
+            </div>
+            
+            <!-- ရထားတွဲလို ဖြေးဖြေးချင်း ရွေ့သွားသော စာတန်း -->
+            <div class="marquee-container">
+                <div class="marquee-text">✨ Created By Gxoker စနစ်သစ်မေးခွန်းအတန်း - HRDK EPS-TOPIK UBT Reading Examination ✨</div>
+            </div>
+
+            <div class="top-bar">
+                <div id="header-user-info">User | Sector</div>
+                <div class="timer-badge">⏱️ <span id="timer">20:00</span></div>
+            </div>
+            <div class="progress-box"><div class="progress-fill" id="p-bar"></div></div>
+            <div class="q-palette" id="palette"></div>
+            <div class="q-text" id="q-text">Loading...</div>
+            <div class="answer-zone" id="ans-list"></div>
+            <div class="nav-controls">
+                <button class="btn-nav" onclick="prevQ()">‹ ရှေ့သို့</button>
+                <button class="btn-nav" onclick="nextQ()">နောက်သို့ ›</button>
+            </div>
+            <button class="btn-submit" onclick="finishExam()">SUBMIT (အဖြေတင်သွင်းမည်)</button>
+        </div>
+
+        <!-- Result Screen (Gxoker Logo ထင်းလင်းစွာပါဝင်သော စာမျက်နှာ) -->
+        <div id="result-screen">
+            <div class="ubt-top-banner">
+                <img src="https://i.imgur.com/WA5hd3D.jpeg" alt="Gxoker Logo" class="header-logo" style="height:35px; border-radius:8px;">
+                <span class="header-title-text" style="font-size: 0.95rem; font-weight: 900;">CREATED BY GXOKER</span>
+                <img src="https://i.imgur.com/WA5hd3D.jpeg" alt="Gxoker Logo" class="header-logo" style="height:35px; border-radius:8px;">
+            </div>
+            <div class="result-hud">
+                <div class="final-res-title">EXAM RESULT SUMMARY</div>
+                <div class="score-circle">
+                    <div class="score-num" id="res-score">0</div>
+                    <div class="score-lbl">မှတ် (100)</div>
+                </div>
+                <div class="res-table">
+                    <div class="res-row"><span class="res-label">အမည် (Name):</span><span class="res-val" id="res-name">-</span></div>
+                    <div class="res-row"><span class="res-label">Passport:</span><span class="res-val" id="res-passport">-</span></div>
+                    <div class="res-row"><span class="res-label">Sector:</span><span class="res-val" id="res-sector">-</span></div>
+                    <div class="res-row"><span class="res-label">အမှန် (Correct):</span><span class="res-val" id="res-acc">0 / 20</span></div>
+                    <div class="res-row"><span class="res-label">ကြာမြင့်ချိန်:</span><span class="res-val" id="res-time">00:00</span></div>
+                </div>
+                <div class="res-action-grid">
+                    <button class="btn-compact-res btn-review-mini" onclick="showReview()">🔍 အဖြေစစ်ရန်</button>
+                    <button class="btn-compact-res btn-exp-mini" onclick="showExplanationScreen()">💡 ရှင်းပြချက်ကြည့်ရန်</button>
+                </div>
+                <div class="res-action-grid" style="margin-top: 8px;">
+                    <button class="btn-compact-res btn-restart-mini" onclick="location.reload()">🔄 ပြန်လည်ဖြေဆိုရန်</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Review Screen -->
+        <div id="review-screen">
+            <div class="ubt-top-banner">
+                <img src="https://i.imgur.com/WA5hd3D.jpeg" alt="Gxoker Logo" class="header-logo">
+                <span class="header-title-text">Created By Gxoker - REVIEW MODE</span>
+                <img src="https://i.imgur.com/WA5hd3D.jpeg" alt="Gxoker Logo" class="header-logo">
+            </div>
+            <div id="review-content" style="padding: 12px; max-height: 70vh; overflow-y: auto;"></div>
+            <div class="action-container" style="padding: 10px 12px 12px 12px;"><button class="btn-submit" onclick="closeReview()">ရလဒ်စာရွက်သို့ ပြန်သွားမည်</button></div>
+        </div>
+
+        <!-- Explanation Screen -->
+        <div id="explanation-screen">
+            <div class="ubt-top-banner" style="margin-bottom: 12px; border-radius: 8px;">
+                <img src="https://i.imgur.com/WA5hd3D.jpeg" alt="Gxoker Logo" class="header-logo">
+                <span class="header-title-text">Created By Gxoker - MYANMAR EXPLANATIONS</span>
+                <img src="https://i.imgur.com/WA5hd3D.jpeg" alt="Gxoker Logo" class="header-logo">
+            </div>
+            <div id="explanation-content"></div>
+            <div class="action-container" style="padding: 10px 0 0 0;"><button class="btn-submit" onclick="closeExplanationScreen()">ရလဒ်စာရွက်သို့ ပြန်သွားမည်</button></div>
+        </div>
+    </div>
+        <script>
+    const allQuestions = [
+        {
+            q: "[1] [ 전세 ]에 대한 설명으로 알맞은 것을 고르십시오.\n\n방을 빌릴 때 큰 액수의 돈을 집주인에게 맡겨 두고 계약 기간 동안 매달 내는 방값 없이 살다가, 나갈 때 맡긴 돈을 전액 돌려받는 한국의 주택 임대 제도입니다.",
+            a: ["월세", "전세", "매매", "하숙"], c: 1,
+            exp: "<b>အမှန်: ② 전세</b><br>" +
+                 "ရှင်းပြချက်: 전세 (အဖြေမှန်): အိမ်ရှင်ကို ငွေအလုံးအရင်းနဲ့ (စပေါ်ငွေကြီးကြီး) တစ်ခါတည်း ပေးထားလိုက်ပြီး စာချုပ်ကာလတစ်လျှောက် တစ်လချင်းစီ အိမ်ခ (အခန်းခ) လုံးဝပေးစရာမလိုဘဲ နေထိုင်ကာ အိမ်ပြောင်းထွက်တဲ့အခါ ပေးထားတဲ့ငွေ အပြည့်အဝ ပြန်ယူတဲ့စနစ်ပါ。လူပြောရရင် ငွေအတိုးသဘောမျိုးနဲ့ အိမ်ကို အလကားနေရသလိုမျိုး နေတဲ့ပုံစံပေါ့။<br>" +
+                 "• 왜 틀렸나요? (ကျန်တာတွေ ဘာလို့ မှားတာလဲ?)<br>" +
+                 "  - ① 월세 (လစဉ်ငှားရမ်းခစနစ်) - လတိုင်း ပုံမှန် အိမ်ခပေးရတာမို့လို့ မမှန်ပါ။<br>" +
+                 "  - ③ 매매 (အိမ်ခြံမြေ ဝယ်ယူခြင်း) - အငှားမဟုတ်ဘဲ အိမ်ကို ကိုယ်ပိုင်ဝယ်လိုက်တာမို့လို့ မမှန်ပါ။<br>" +
+                 "  - ④ 하숙 (အိမ်ရှင်နဲ့အတူနေကာ အစားအစာပါစားသည့်စနစ်) - လစဉ်အိမ်ခပေးရုံတင်မကဘဲ ထမင်းပါ ကျွေးတာမို့လို့ မမှန်ပါ။"
+        },
+        {
+            q: "[2] [ 고시원 ]에 대한 설명으로 알맞은 것을 고르십시오.\n\n보증금 없이 매달 방세만 내고 생활하는 곳으로, 방이 매우 좁고 화장실과 부엌을 다른 사람들과 함께 쓰는 거주 형태입니다.",
+            a: ["아파트", "원룸", "오피스텔", "고시원"], c: 3,
+            exp: "<b>အမှန်: ④ 고시원</b><br>" +
+                 "ရှင်းပြချက်: 고시원 (အဖြေမှန်): စပေါ်ငွေ လုံးဝမလိုဘဲ တစ်လစာ အခန်းခလေးပဲ ပေးပြီး နေရတဲ့နေရာပါ။ အခန်းက အရမ်းကျဉ်းပြီး ရေချိုးခန်းနဲ့ မီးဖိုချောင်ကို တခြားသူတွေနဲ့ အတူတူ (ဘုံသုံး) သုံးရတဲ့ ပုံစံပါ。 ကျောင်းသားတွေ ငွေကုန်သက်သာအောင် တည်းခိုတဲ့ အခန်းကျဉ်းလေးတွေပေါ့။<br>" +
+                 "• 왜 틀렸나요? (ကျန်တာတွေ ဘာလို့ မှားတာလဲ?)<br>" +
+                 "  - ① 아파트 (တိုက်ခန်းကြီးများ) - မိသားစုလိုက်နေတဲ့ အခန်းကျယ်ကြီးတွေဖြစ်လို့ မမှန်ပါ။<br>" +
+                 "  - ② 원룸 (ဝမ်းရွန်း) - အခန်းထဲမှာ ရေချိုးခန်းနဲ့ မီးဖိုချောင် ကိုယ်ပိုင်ပါပြီးသားဖြစ်လို့ မမှန်ပါ။<br>" +
+                 "  - ③ 오피스텔 (အိုဖစ်စတယ်) - ရုံးခန်းနဲ့ လူနေခန်း တွဲလျက်ပါတဲ့ ခေတ်မီတိုက်ခန်းမျိုးဖြစ်လို့ မမှန်ပါ။"
+        },
+        {
+            q: "[3] [ 하숙집 ]에 대한 설명으로 알맞은 것을 고르십시오.\n\n매달 일정한 방세를 내며 생활하는 곳으로, 방만 빌려주는 것이 아니라 집주인이 매일 아침과 저녁 식사를 직접 차려 줍니다.",
+            a: ["기숙사", "하숙집", "고시원", "모텔"], c: 1,
+            exp: "<b>အမှန်: ② 하숙집</b><br>" +
+                 "ရှင်းပြချက်: 하숙집 (အဖြေမှန်): လစဉ် အခန်းခပုံမှန်ပေးရုံတင်မကဘဲ အိမ်ရှင်ကိုယ်တိုင်က မနက်စာနဲ့ ညစာကို ချက်ပြုတ်ကျွေးမွေးတဲ့ နေထိုင်မှုပုံစံပါ。 မိဘအိမ်လိုပဲ ထမင်းပါချက်ကျွေးတဲ့ အဆောင်လိုမျိုးပေါ့။<br>" +
+                 "• 왜 틀렸나요? (ကျန်တာတွေ ဘာလို့ မှားတာလဲ?)<br>" +
+                 "  - ① 기숙사 (ကျောင်းသား/အလုပ်သမား အဆောင်) - အိမ်ရှင်ကိုယ်တိုင် ထမင်းချက်ကျွေးတာမျိုးမဟုတ်ဘဲ စုပေါင်းနေထိုင်တဲ့နေရာဖြစ်လို့ မမှန်ပါ။<br>" +
+                 "  - ③ 고시원 (ဂိုရှီဝမ်) - ရေချိုးခန်းနဲ့ မီးဖိုချောင်ကို အတူသုံးရပြီး ထမင်းချက်မကျွေးတာမို့လို့ မမှန်ပါ။<br>" +
+                 "  - ④ 모텔 (မိုတယ်) - ခေတ္တခဏ တည်းခိုတဲ့နေရာဖြစ်လို့ မမှန်ပါ။"
+        },
+        {
+            q: "[4] [ 원룸 ]에 대한 설명으로 알맞은 것을 고르십시오.\n\n방 하나 안에 거실, 침실, 부엌이 함께 있는 주거 형태로, 보통 세탁기와 냉장고 등 기본 가전제품이 갖추어져 있습니다.",
+            a: ["원룸", "한옥", "하숙집", "고시원"], c: 0,
+            exp: "<b>အမှန်: ① 원룸</b><br>" +
+                 "ရှင်းပြချက်: 원룸 (အဖြေမှန်): အခန်းတစ်ခန်းတည်းမှာပဲ အိပ်ခန်း၊ ဧည့်ခန်းနဲ့ မီးဖိုချောင် အားလုံးပါဝင်နေပြီး အဝတ်လျှော်စက်၊ ရေခဲသေတ္တာလို အသုံးအဆောင်တွေ အစုံအလင် ပါရှိတဲ့ အိမ်ခန်းမျိုးပါ。 တစ်ယောက်တည်း (သို့) နှစ်ယောက်တည်း လွတ်လွတ်လပ်လပ် နေလို့ကောင်းတဲ့ စတူဒီယိုခန်းမျိုးပေါ့။<br>" +
+                 "• 왜 틀렸나요? (ကျန်တာတွေ ဘာလို့ မှားတာလဲ?)<br>" +
+                 "  - ② 한옥 (ကိုရီးယား ရိုးရာအိမ်) - ရှေးခေတ်ရိုးရာအိမ်ပုံစံဖြစ်လို့ မမှန်ပါ။<br>" +
+                 "  - ③ 하숙집 (ဟာဆုဂျစ်) - အိမ်ရှင်က ထမင်းကျွေးတဲ့ အဆောင်ပုံစံဖြစ်လို့ မမှန်ပါ။<br>" +
+                 "  - ④ 고시원 (ဂိုရှီဝမ်) - အခန်းကျဉ်းလေးတွေဖြစ်ပြီး ပစ္စည်းအစုံအလင် မပါတတ်လို့ မမှန်ပါ။"
+        },
+        {
+            q: "[5] [ 설날 ]에 대한 설명으로 알맞은 것을 고르십시오.\n\n음력 1월 1일로 한국의 가장 큰 명절 중 하나이며, 떡국을 먹고 어른들께 세배를 드리며 새해 인사를 나눕니다.",
+            a: ["추석", "설날", "단오", "대보름"], c: 1,
+            exp: "<b>အမှန်: ② 설날</b><br>" +
+                 "ရှင်းပြချက်: 설날 (အဖြေမှန်): လပြက္ခဒိန် ၁ လပိုင်း ၁ ရက်နေ့ဖြစ်ပြီး ကိုရီးယားရဲ့ အကြီးမားဆုံး နှစ်သစ်ကူးပွဲတော်တစ်ခုပါ。 ဒီနေ့မှာ 떡국 (မုန့်နှစ်ပြုတ်) စားကြပြီး လူကြီးတွေကို ရှိခိုးကန်တော့ကာ နှစ်သစ်နှုတ်ဆက်ကြပါတယ်。<br>" +
+                 "• 왜 틀렸나요? (ကျန်တာတွေ ဘာလို့ မှားတာလဲ?)<br>" +
+                 "  - ① 추석 (ချူဆော့ပွဲတော်) - နှောင်းပိုင်း စပါးရိပ်သိမ်းချိန် ၈ လပိုင်း ၁၅ ရက်နေ့ဖြစ်လို့ မမှန်ပါ။<br>" +
+                 "  - ③ 단오 (ဒန်အိုပွဲတော်) - နွေရာသီ ပွဲတော်တစ်ခုဖြစ်လို့ပါ။<br>" +
+                 "  - ④ 대보름 (လပြည့်နေ့ပွဲတော်) - ပထမလပြည့်နေ့ကို ပြောတာဖြစ်လို့ မမှန်ပါ။"
+        },
+        {
+            q: "[6] [ 추석 ]에 대한 설명으로 알맞은 것을 고르십시오.\n\n음력 8월 15일로 '한가위'라고도 부르며, 햅쌀로 밥을 짓고 송편을 만들어 먹으며 조상께 차례를 지내는 명절입니다.",
+            a: ["추석", "설날", "동지", "칠석"], c: 0,
+            exp: "<b>အမှန်: ① 추석</b><br>" +
+                 "ရှင်းပြချက်: 추석 (အဖြေမှန်): လပြက္ခဒိန် ၈ လပိုင်း ၁၅ ရက်နေ့ (ဟန်ဂါဝီ လို့လည်း ခေါ်ပါတယ်) ဖြစ်ပြီး ကောက်သစ်ဆန်နဲ့ ထမင်းချက်စား၊ 송편 (ကောက်ညှင်းထုပ်/မုန့်ဖတ်) လုပ်စားပြီး ဘိုးဘွားတွေကို ပူဇော်ကန်တော့တဲ့ ပွဲတော်ပါ。 ကိုရီးယားရဲ့ သီတင်းကျွတ်/ကျေးဇူးတော်နေ့လိုမျိုး ပွဲတော်ကြီးပေါ့။<br>" +
+                 "• 왜 틀렸나요? (ကျန်တာတွေ ဘာလို့ မှားတာလဲ?)<br>" +
+                 "  - ② 설날 (နှစ်သစ်ကူးပွဲတော်) - ၁ လပိုင်း ၁ ရက်နေ့ဖြစ်လို့ မမှန်ပါ။<br>" +
+                 "  - ③ 동지 (ဆောင်းဥတုရောက်ချိန်) - ညအရှည်ဆုံးနေ့မှာ ပဲ죽 (ပဲနီစေ့ပြုတ်) စားတဲ့နေ့ဖြစ်လို့ မမှန်ပါ။<br>" +
+                 "  - ④ 칠석 (ချီဆော့ပွဲတော်) - နွေရာသီ ရှေးဟောင်းဒဏ္ဍာရီလာ ပွဲနေ့ဖြစ်လို့ မမှန်ပါ။"
+        },
+        {
+            q: "[7] [ 동지 ]에 대한 설명으로 알맞은 것을 고르십시오.\n\n1년 중 밤이 가장 길고 낮이 가장 짧은 날로, 붉은색 팥죽을 끓여 먹으며 액운과 귀신을 쫓는 풍습이 있습니다.",
+            a: ["정월대보름", "동지", "단오", "초복"], c: 1,
+            exp: "<b>အမှန်: ② 동지</b><br>" +
+                 "ရှင်းပြချက်: 동지 (အဖြေမှန်): တစ်နှစ်ပတ်လုံးမှာ ညတာအရှည်ဆုံးနဲ့ နေ့တာအတိုဆုံးနေ့ ဖြစ်ပါတယ်။ မကောင်းဆိုးဝါးနဲ့ ဘေးဥပဒ်တွေကို နှင်ထုတ်ဖို့အတွက် အနီရောင် ပဲနီစေ့ပြုတ် (팥죽) ကို ချက်စားတဲ့ ရိုးရာဓလေ့ ရှိပါတယ်。<br>" +
+                 "• 왜 틀렸나요? (ကျန်တာတွေ ဘာလို့ မှားတာလဲ?)<br>" +
+                 "  - ① 정월대보름 (လပြည့်ပွဲတော်) - နှစ်ဆန်းပိုင်း ပထမလပြည့်နေ့ဖြစ်လို့ မမှန်ပါ။<br>" +
+                 "  - ③ 단오 (ဒန်အိုပွဲတော်) - နွေရာသီပွဲတော်ဖြစ်လို့ မမှန်ပါ။<br>" +
+                 "  - ④ 초복 (ခိုဘော့ခ် - ပူပြင်းဆုံးကာလအစ) - နွေရာသီမှာ ကြက်စွပ်ပြုတ်စားတဲ့နေ့ဖြစ်လို့ မမှန်ပါ။"
+        },
+        {
+            q: "[8] [ 집들이 ]에 대한 설명으로 알맞은 것을 고르십시오.\n\n새 집으로 이사를 한 후에 가족이나 친한 친구들을 초대하여 함께 음식을 먹으며 축하하는 모임입니다.",
+            a: ["돌잔치", "환갑잔치", "집들이", "피로연"], c: 2,
+            exp: "<b>အမှန်: ③ 집들이</b><br>" +
+                 "ရှင်းပြချက်: 집들이 (အဖြေမှန်): အိမ်သစ်ကို ပြောင်းရွှေ့ပြီးနောက် မိသားစုဝင်တွေနဲ့ မိတ်ဆွေသူငယ်ချင်းတွေကို ဖိတ်ခေါ်ပြီး အစားအသောက်တွေ ကျွေးမွေးကာ အိမ်သစ်တက်တာကို ဂုဏ်ပြုကြတဲ့ပွဲ ဖြစ်ပါတယ်။ အိမ်သစ်တက်ပွဲပေါ့။<br>" +
+                 "• 왜 틀렸나요? (ကျန်တာတွေ ဘာလို့ မှားတာလဲ?)<br>" +
+                 "  - ① 돌잔치 ( ၁ ပြည့်မွေးနေ့ပွဲ) - ကလေးမွေးပြီး ၁ နှစ်ပြည့်တာကို အထိမ်းအမှတ်လုပ်တာဖြစ်လို့ မမှန်ပါ။<br>" +
+                 "  - ② 환갑잔치 (အသက် ၆၀ ပြည့်မွေးနေ့ပွဲ) - အသက် ၆၀ ပြည့်တာကို ဂုဏ်ပြုတာဖြစ်လို့ မမှန်ပါ။<br>" +
+                 "  - ④ 피로연 (မင်္ဂလာဧည့်ခံပွဲ) - လက်ထပ်ပွဲအပြီး ဧည့်ခံကျွေးမွေးပွဲဖြစ်လို့ မမှန်ပါ။"
+        },
+        {
+            q: "[9] [ 돌잔치 ]에 대한 설명으로 알맞은 것을 고르십시오.\n\n아기가 태어난 지 꼭 1년이 되는 날을 축하하는 잔치로, 아이의 미래를 점치는 '돌잡이' 행사를 합니다.",
+            a: ["백일잔치", "돌잔치", "칠순잔치", "송년회"], c: 1,
+            exp: "<b>အမှန်: ② 돌잔치</b><br>" +
+                 "ရှင်းပြချက်: 돌잔치 (အဖြေမှန်): ကလေးမွေးဖွားပြီး တိတိကျကျ ၁ နှစ်ပြည့်တဲ့နေ့ကို အထိမ်းအမှတ်လုပ်တဲ့ပွဲဖြစ်ပြီး၊ ကလေးရဲ့ အနာဂတ်ဘဝကို ဟောကိန်းထုတ်ပေးတဲ့ '돌잡이' (ပစ္စည်းရွေးခိုင်းတဲ့ပွဲ) ကို လုပ်ဆောင်ပါတယ်。<br>" +
+                 "• 왜 틀렸나요? (ကျန်တာတွေ ဘာလို့ မှားတာလဲ?)<br>" +
+                 "  - ① 백일잔치 (ရက် ၁၀၀ ပြည့်ပွဲ) - မွေးပြီး ရက် ၁၀၀ ပြည့်တာဖြစ်လို့ မမှန်ပါ။<br>" +
+                 "  - ③ 칠순잔치 (အသက် ၇၀ ပြည့်ပွဲ) - အသက် ၇၀ ပြည့်တာကို ဂုဏ်ပြုတာဖြစ်လို့ မမှန်ပါ။<br>" +
+                 "  - ④ 송년회 (နှစ်ကုန်ပိုင်း နှုတ်ဆက်ပွဲ) - နှစ်တစ်နှစ်ကုန်ဆုံးလို့ လုပ်တဲ့ပွဲဖြစ်လို့ မမှန်ပါ။"
+        },
+        {
+            q: "[10] [ 좌식 문화 ]에 대한 설명으로 알맞은 것을 고르십시오.\n\n온돌에서 유래된 난방 방식으로 방바닥을 따뜻하게 덥혀 생활하며, 실내에 들어갈 때는 반드시 신발을 벗어야 하는 한국의 주거 문화입니다.",
+            a: ["입식 문화", "좌식 문화", "서구식 문화", "공동체 문화"], c: 1,
+            exp: "<b>အမှန်: ② 좌식 문화</b><br>" +
+                 "ရှင်းပြချက်: 좌식 문화 (အဖြေမှန်): အွန်ဒိုးလ် (ကြမ်းပြင်အပူပေးစနစ်) ကနေ ဆင်းသက်လာပြီး အခန်းကြမ်းပြင်ကို ပူနွေးအောင်လုပ်ကာ ကြမ်းပြင်ပေါ်မှာထိုင်၊ အိပ်ပြီး နေထိုင်ကြပါတယ်။ အိမ်ထဲကို ဝင်တဲ့အခါမှာလည်း ဖိနပ်ကို မဖြစ်မနေ ချွတ်ရတဲ့ ကိုရီးယားရဲ့ လူနေမှုစနစ်တစ်ခုပါ。 လူလိုပြောရရင် ကြမ်းပြင်ပေါ်ထိုင်တဲ့ ကြမ်းပြင်ယဉ်ကျေးမှုပေါ့။<br>" +
+                 "• 왜 틀렸나요? (ကျန်တာတွေ ဘာလို့ မှားတာလဲ?)<br>" +
+                 "  - ① 입식 문화 (ကုလားထိုင်ထိုင်/စားပွဲသုံးစနစ်) - ကုလားထိုင်ပေါ်ထိုင်ပြီး စားသောက်နေထိုင်တဲ့စနစ်ဖြစ်လို့ မမှန်ပါ။<br>" +
+                 "  - ③ 서구식 문화 (အနောက်တိုင်းဆန်တဲ့ယဉ်ကျေးမှု) - အနောက်တိုင်းပုံစံဖြစ်လို့ မမှန်ပါ။<br>" +
+                 "  - ④ 공동체 문화 (အသိုက်အဝန်းယဉ်ကျေးမှု) - လူအများစုပေါင်းနေထိုင်မှုကို ဆိုလိုတာဖြစ်လို့ မမှန်ပါ။"
+        },
+        {
+            q: "[11] [ 수습기간 ]에 대한 설명으로 알맞은 것을 고르십시오.\n\n근로자가 정식으로 일하기 전에 일에 잘 적응하고 기술을 배울 수 있도록 두는 기간으로, 보통 최대 3개월 동안 법정 감액된 임금을 받기도 합니다.",
+            a: ["계약기간", "휴식기간", "수습기간", "체류기간"], c: 2,
+            exp: "<b>အမှန်: ③ 수습기간</b><br>" +
+                 "ရှင်းပြချက်: 수습기간 (အဖြေမှန်): အလုပ်သမားတစ်ဦး တရားဝင် တပ်အပ်မလုပ်ခင်မှာ လုပ်ငန်းခွင်နဲ့ အဆင်ပြေပြေ ယဉ်ပါးလာအောင်နဲ့ ပညာရပ်တွေကို လေ့လာသင်ယူနိုင်အောင် ထားရှိပေးတဲ့ ကာလဖြစ်ပြီး၊ ပုံမှန်အားဖြင့် အများဆုံး ၃ လအထိ ဥပဒေအရ လစာအနည်းငယ် လျှော့ပေးထားတာမျိုးကိုလည်း ခံစားရတတ်ပါတယ်。 အစမ်းခန့်ကာလပေါ့။<br>" +
+                 "• 왜 틀렸나요? (ကျန်တာတွေ ဘာလို့ မှားတာလဲ?)<br>" +
+                 "  - ① 계약기간 (စာချုပ်ကာလ) - အလုပ်လုပ်ဖို့ ချုပ်ဆိုထားတဲ့ အချိန်ကာလဖြစ်လို့ မမှန်ပါ။<br>" +
+                 "  - ② 휴식기간 (အနားယူချိန်ကာလ) - အနားယူတဲ့အချိန်ဖြစ်လို့ မမှန်ပါ။<br>" +
+                 "  - ④ 체류기간 (နေထိုင်ခွင့်ကာလ) - နိုင်ငံထဲမှာ နေထိုင်ခွင့်ရတဲ့ အချိန်ကာလဖြစ်လို့ မမှန်ပါ။"
+        },
+        {
+            q: "[12] [ 연장근로수당 ]에 대한 설명으로 알맞은 것을 고르십시오.\n\n법적으로 정해진 정규 근로시간(하루 8시간, 주 40시간) 외에 추가로 더 일한 시간에 대해 기본급의 50% 이상을 더 얹어 주는 수당입니다.",
+            a: ["야간근로수당", "연장근로수당", "휴일근로수당", "식대"], c: 1,
+            exp: "<b>အမှန်: ② 연장근로수당</b><br>" +
+                 "ရှင်းပြချက်: 연장근로수당 (အဖြေမှန်): ဥပဒေအရ သတ်မှတ်ထားတဲ့ ပုံမှန်အလုပ်ချိန် (တစ်ရက်ကို ၈ နာရီ၊ တစ်ပတ်ကို ၄၀ နာရီ) ထက် ပိုပြီး အချိန်ပိုဆင်းပေးလိုက်ရတဲ့အတွက် အခြေခံလစာရဲ့ ၅၀% ထက်မနည်း ပိုပေးတဲ့ အချိန်ပိုလုပ်အားခစရိတ် ဖြစ်ပါတယ်。 အချိန်ပိုကြေး (OT) ပေါ့။<br>" +
+                 "• 왜 틀렸나요? (ကျန်တာတွေ ဘာလို့ မှားတာလဲ?)<br>" +
+                 "  - ① 야간근로수당 (ညဆိုင်းကြေး) - ညဘက်အချိန်မှာ အလုပ်လုပ်လို့ ပေးတာဖြစ်လို့ မမှန်ပါ။<br>" +
+                 "  - ③ 휴일근로수당 (ပိတ်ရက်လုပ်ခ) - ပိတ်ရက်တွေမှာ အလုပ်လုပ်လို့ ပေးတာဖြစ်လို့ မမှန်ပါ။<br>" +
+                 "  - ④ 식대 (ထမင်းစရိတ်) - စားစရိတ်ဖိုးဖြစ်လို့ မမှန်ပါ။"
+        },
+        {
+            q: "[13] [ 야간근로수당 ]에 대한 설명으로 알맞은 것을 고르십시오.\n\n밤 10시부터 다음 날 아침 6시 사이에 근무했을 때 법적으로 기본급 외에 추가로 가산하여 지급하는 수당입니다.",
+            a: ["연장근로수당", "야간근로수당", "휴일근로수당", "주휴수당"], c: 1,
+            exp: "<b>အမှန်: ② 야간근로수당</b><br>" +
+                 "ရှင်းပြချက်: 야간근로수당 (အဖြေမှန်): ည ၁၀ နာရီကနေ နောက်တစ်နေ့ မနက် ၆ နာရီအတွင်းမှာ အလုပ်လုပ်ကိုင်ခဲ့တဲ့အခါ ဥပဒေအရ အခြေခံလစာအပြင် ထပ်ဆောင်းပေါင်းပြီး ပေးချေရတဲ့ ညဆိုင်းလုပ်ခစရိတ် ဖြစ်ပါတယ်။ ညဘက်ဆင်းရလို့ ပေးတဲ့ ညထပ်ဆောင်းကြေးပေါ့။<br>" +
+                 "• 왜 틀렸나요? (ကျန်တာတွေ ဘာလို့ မှားတာလဲ?)<br>" +
+                 "  - ① 연장근로수당 (အချိန်ပိုကြေး) - အလုပ်ချိန်ထက် ပိုလုပ်လို့ ပေးတာဖြစ်လို့ မမှန်ပါ။<br>" +
+                 "  - ③ 휴일근로수당 (ပိတ်ရက်လုပ်ခ) - အလုပ်ပိတ်ရက်မှာ အလုပ်လုပ်လို့ ပေးတာဖြစ်လို့ မမှန်ပါ။<br>" +
+                 "  - ④ 주휴수당 (ရက်သတ္တပတ် အနားယူခ) - ပုံမှန်အလုပ်ဆင်းလို့ ပေးတဲ့ ပိတ်ရက်လစာဖြစ်လို့ မမှန်ပါ။"
+        },
+        {
+            q: "[14] [ 실수령액 ]에 대한 설명으로 알맞은 것을 고르십시오.\n\n총급여에서 세금과 4대 보험료 등을 제외하고 실제로 근로자의 통장으로 들어오는 최종 금액입니다.",
+            a: ["기본급", "총지급액", "실수령액", "상여금"], c: 2,
+            exp: "<b>အမှန်: ③ 실수령액</b><br>" +
+                 "ရှင်းပြချက်: 실수령액 (အဖြေမှန်): စုစုပေါင်းလစာထဲကနေ အခွန်နဲ့ လူမှုဖူလုံရေး/အာမခံကြေး (၄) မျိုးစတာတွေကို နုတ်ပယ်ပြီးတဲ့နောက် အလုပ်သမားရဲ့ ဘဏ်စာရင်းထဲကို တကယ်တမ်း ဝင်ရောက်လာတဲ့ နောက်ဆုံးငွေပမာဏ ဖြစ်ပါတယ်။ လက်ထဲတကယ်ရတဲ့ အသားတင်လစာပေါ့။<br>" +
+                 "• 왜 틀렸나요? (ကျန်တာတွေ ဘာလို့ မှားတာလဲ?)<br>" +
+                 "  - ① 기본급 (အခြေခံလစာ) - အခွန်မဖြတ်ခင် အခြေခံသတ်မှတ်ထားတဲ့ လစာဖြစ်လို့ မမှန်ပါ။<br>" +
+                 "  - ② 총지급액 (စုစုပေါင်းထုတ်ပေးငွေ) - ဘာမှမဖြတ်ရသေးတဲ့ စုစုပေါင်းငွေပမာဏဖြစ်လို့ မမှန်ပါ။<br>" +
+                 "  - ④ 상여금 (ဆုကြေးငွေ/ဘောနပ်စ်) - အပိုဆုကြေးငွေဖြစ်လို့ မမှန်ပါ။"
+        },
+        {
+            q: "[15] [ 출국만기보험 ]에 대한 설명으로 알맞은 것을 고르십시오.\n\n외국인 근로자가 한국에서 1년 이상 근무한 후 출국할 때 퇴직금을 일시불로 받을 수 있도록 사업주가 매달 의무적으로 납입하는 전용 보험입니다.",
+            a: ["귀국비용보험", "상해보험", "출국만기보험", "산재보험"], c: 2,
+            exp: "<b>အမှန်: ③ 출국만기보험</b><br>" +
+                 "ရှင်းပြချက်: 출국만기보험 (အဖြေမှန်): နိုင်ငံခြားသားအလုပ်သမား ကိုရီးယားမှာ ၁ နှစ်နဲ့အထက် အလုပ်လုပ်ပြီးနောက် ပြန်လည်ထွက်ခွာမယ့်အချိန်မှာ လုပ်သက်ခွင့်/ပင်စင်နစ်နာကြေး (퇴직금) ကို တစ်ခါတည်း အပြည့်အဝ ထုတ်ယူနိုင်ဖို့အတွက် အလုပ်ရှင်က လစဉ်မဖြစ်မနေ ပေးသွင်းပေးရတဲ့ အထူးအာမခံတစ်ခု ဖြစ်ပါတယ်။ နစ်နာကြေး/ပင်စင်အတွက် အလုပ်ရှင်ထည့်ပေးရတဲ့ အာမခံပေါ့။<br>" +
+                 "• 왜 틀렸나요? (ကျန်တာတွေ ဘာလို့ မှားတာလဲ?)<br>" +
+                 "  - ① 귀국비용보험 (နိုင်ငံပြန်စရိတ်အာမခံ) - လေယာဉ်လက်မှတ်ခအတွက် အလုပ်သမားကိုယ်တိုင် ပေးရတာဖြစ်လို့ မမှန်ပါ။<br>" +
+                 "  - ② 상해보험 (ထိခိုက်ဒဏ်ရာအာမခံ) - ထိခိုက်မှုအတွက်ဖြစ်လို့ မမှန်ပါ။<br>" +
+                 "  - ④ 산재보험 (လုပ်ငန်းခွင် ထိခိုက်မှုအာမခံ) - အလုပ်ခွင်မှာ ထိခိုက်ရင် ကုသဖို့အတွက်ဖြစ်လို့ မမှန်ပါ။"
+        },
+        {
+            q: "[16] [ 귀국비용보험 ]에 대한 설명으로 알맞은 것을 고르십시오.\n\n외국인 근로자가 귀국할 때 필요한 항공료 등 여비를 마련하기 위해 입국 후 80일 이내에 근로자 본인이 직접 가입해야 하는 전용 보험입니다.",
+            a: ["출국만기보험", "귀국비용보험", "국민연금", "고용보험"], c: 1,
+            exp: "<b>အမှန်: ② 귀국비용보험</b><br>" +
+                 "ရှင်းပြချက်: 귀국비용보험 (အဖြေမှန်): နိုင်ငံခြားသားအလုပ်သမားတွေ ကိုရီးယားကနေ ပြန်တဲ့အခါ လေယာဉ်လက်မှတ်ခနဲ့ အခြားခရီးစရိတ်တွေ လိုအပ်တာကြောင့် ကိုရီးယားရောက်ပြီး ရက်ပေါင်း ၈၀ အတွင်းမှာ အလုပ်သမားကိုယ်တိုင် တိုက်ရိုက်ပေးသွင်းရတဲ့ အထူးအာမခံတစ်ခု ဖြစ်ပါတယ်။ ပြန်ရင်ပြန်ဖို့ လေယာဉ်လက်မှတ်ဖိုး စုထားတဲ့ အာမခံပေါ့။<br>" +
+                 "• 왜 틀렸나요? (ကျန်တာတွေ ဘာလို့ မှားတာလဲ?)<br>" +
+                 "  - ① 출국만기보험 (ထွက်ခွာမည့်အာမခံ) - အလုပ်ရှင်က နစ်နာကြေးအတွက် လစဉ်ပေးသွင်းတာဖြစ်လို့ မမှန်ပါ။<br>" +
+                 "  - ③ 국민연금 (နိုင်ငံတော်ပင်စင်ရန်ပုံငွေ) - နိုင်ငံတော်က စီမံတဲ့ ပင်စင်ဖြစ်လို့ မမှန်ပါ။<br>" +
+                 "  - ④ 고용보험 (အလုပ်အကိုင်အာမခံ) - အလုပ်လက်မဲ့ဖြစ်တဲ့အခါ ထောက်ပံ့တဲ့အာမခံဖြစ်လို့ မမှန်ပါ။"
+        },
+        {
+            q: "[17] [ 산업재해보상보험 (산재보험) ]에 대한 설명으로 알맞은 것을 고르십시오.\n\n일하는 도중에 부상을 당하거나 업무와 관련된 질병에 걸렸을 때 치료비와 휴업급여 등을 보상받을 수 있도록 국가가 운영하는 의무 보험입니다.",
+            a: ["산업재해보상보험", "건강보험", "상해보험", "자동차보험"], c: 0,
+            exp: "<b>အမှန်: ① 산업재해보상보험 (산재보험)</b><br>" +
+                 "ရှင်းပြချက်: 산재보험 (အဖြေမှန်): အလုပ်လုပ်နေတုန်း ထိခိုက်ဒဏ်ရာရတာ (သို့) အလုပ်နဲ့ပတ်သက်တဲ့ ရောဂါဝေဒနာတွေ ခံစားရတဲ့အခါ ဆေးကုသစရိတ်နဲ့ အလုပ်မလုပ်နိုင်တဲ့ ကာလအတွက် နစ်နာကြေးတွေကို နိုင်ငံတော်ကနေ တာဝန်ယူပေးတဲ့ မဖြစ်မနေ အာမခံတစ်ခု ဖြစ်ပါတယ်။ အလုပ်ခွင် ထိခိုက်မှုလျော်ကြေးအာမခံပေါ့။<br>" +
+                 "• 왜 틀렸나요? (ကျန်တာတွေ ဘာလို့ မှားတာလဲ?)<br>" +
+                 "  - ② 건강보험 (ကျန်းမာရေးအာမခံ) - သာမန်နေမကောင်းဖြစ်လို့ ဆေးရုံပြတဲ့အခါ သုံးတာဖြစ်လို့ မမှန်ပါ။<br>" +
+                 "  - ③ 상해보험 (အနာတရအာမခံ) - ကိုယ်ပိုင်ထայ်ပေးရတဲ့ အာမခံဖြစ်လို့ မမှန်ပါ။<br>" +
+                 "  - ④ 자동차보험 (မော်တော်ယာဉ်အာမခံ) - ကားတိုက်မှုဖြစ်လို့ မမှန်ပါ။"
+        },
+        {
+            q: "[18] [ 사업장 변경 ]에 대한 설명으로 알맞은 것을 고르십시오.\n\n사업장의 휴업, 폐업, 임금 체불 등 부득이한 사유로 더 이상 일할 수 없게 되었을 때, 다른 회사로 직장을 옮길 수 있도록 허가받는 절차입니다.",
+            a: ["체류자격 변경", "체류기간 연장", "사업장 변경", "재입국 허가"], c: 2,
+            exp: "<b>အမှန်: ③ 사업장 변경</b><br>" +
+                 "ရှင်းပြချက်: 사업장 변경 (အဖြေမှန်): စက်ရုံပိတ်သွားတာ၊ အလုပ်ရပ်ဆိုင်းသွားတာ၊ လစာကြွေးကျန်တာစတဲ့ ရှောင်လွှဲလို့မရတဲ့ အကြောင်းရင်းတွေကြောင့် အဲ့ဒီစက်ရုံမှာ ဆက်မလုပ်နိုင်တော့ဘဲ တခြားကုမ္ပဏီ/စက်ရုံတစ်ခုကို ပြောင်းရွှေ့လုပ်ကိုင်ခွင့် တရားဝင် တောင်းခံတဲ့ လုပ်ထုံးလုပ်နည်း ဖြစ်ပါတယ်။ အလုပ်ပြောင်းခွင့် လျှောက်တာပေါ့။<br>" +
+                 "• 왜 틀렸나요? (ကျန်တာတွေ ဘာလို့ မှားတာလဲ?)<br>" +
+                 "  - ① 체류자격 변경 (နေထိုင်ခွင့်အမျိုးအစား ပြောင်းလဲခြင်း) - ဗီဇာအမျိုးအစားပြောင်းတာဖြစ်လို့ မမှန်ပါ။<br>" +
+                 "  - ② 체류기간 연장 (နေထိုင်ခွင့်သက်တမ်းတိုးခြင်း) - ဗီဇာသက်တမ်းတိုးတာဖြစ်လို့ မမှန်ပါ။<br>" +
+                 "  - ④ 재입국 허가 (ပြန်လည်ဝင်ရောက်ခွင့် ခွင့်ပြုချက်) - နိုင်ငံခြားထွက်ပြီး ပြန်ဝင်ဖို့ တောင်းတာဖြစ်လို့ မမှန်ပါ။"
+        },
+        {
+            q: "[19] [ 외국인등록증 ]에 대한 설명으로 알맞은 것을 고르십시오.\n\n한국에 90일을 초과하여 장기 체류하려는 외국인이 입국한 날부터 90일 이내에 출입국·외국인관서에서 반드시 발급받아야 하는 공식 신분증입니다.",
+            a: ["여권", "외국인등록증", "운전면허증", "취업비자"], c: 1,
+            exp: "<b>အမှန်: ② 외국인등록증</b><br>" +
+                 "ရှင်းပြချက်: 외국인등록증 (အဖြေမှန်): ကိုရီးယားနိုင်ငံမှာ ရက်ပေါင်း ၉၀ ကျော် ရေရှည်နေထိုင်မယ့် နိုင်ငံခြားသားတွေဟာ နိုင်ငံထဲဝင်ရောက်ပြီး ရက် ၉၀ အတွင်းမှာ လဝကရုံးမှာ မဖြစ်မနေ သွားရောက်ထုတ်ယူရမယ့် တရားဝင် ကိုယ်ပိုင်အမှတ်အသား ကတ်ပြား ဖြစ်ပါတယ်။ နိုင်ငံခြားသားမှတ်ပုံတင်ကတ်ပြားပေါ့။<br>" +
+                 "• 왜 틀렸나요? (ကျန်တာတွေ ဘာလို့ မှားတာလဲ?)<br>" +
+                 "  - ① 여권 (နိုင်ငံကူးလက်မှတ်/ပတ်စ်ပို့) - မိခင်နိုင်ငံက ထုတ်ပေးတဲ့ စာအုပ်ဖြစ်လို့ မမှန်ပါ။<br>" +
+                 "  - ③ 운전면허증 (ယာဉ်မောင်းလိုင်စင်) - ကားမောင်းဖို့ လိုင်စင်ဖြစ်လို့ မမှန်ပါ။<br>" +
+                 "  - ④ 취업비자 (အလုပ်အကိုင်ဗီဇာ) - ဝင်ရောက်ဖို့ ရယူရတဲ့ ခွင့်ပြုချက်ဖြစ်လို့ မမှန်ပါ။"
+        },
+        {
+            q: "[20] [ 체류기간 연장허가 ]에 대한 설명으로 알맞은 것을 고르십시오.\n\n외국인 근로자가 취업 활동을 위해 한국에 합법적으로 머물 수 있는 마지막 날짜를 넘기지 않고 더 머물기 위해 출입국관리사무소에 신청하는 민원입니다.",
+            a: ["체류기간 연장허가", "사업장 추가허가", "근무처 변경신고", "자진출국 신고"], c: 0,
+            exp: "<b>အမှန်: ① 체류기간 연장허가</b><br>" +
+                 "ရှင်းပြချက်: 체류기간 연장허가 (အဖြေမှန်): နိုင်ငံခြားသားအလုပ်သမားတွေ တရားဝင်နေထိုင်ခွင့် သက်တမ်းကုန်ဆုံးမယ့်ရက်ကို မကျော်လွန်သွားဘဲ ဆက်လက်ပြီး တရားဝင် အလုပ်လုပ်ကိုင်နေထိုင်နိုင်ဖို့အတွက် လဝကရုံးမှာ သွားရောက်လျှောက်ထားရတဲ့ လုပ်ငန်းစဥ် ဖြစ်ပါတယ်။ ဗီဇာသက်တမ်းတိုးတာပေါ့။<br>" +
+                 "• 왜 틀렸나요? (ကျန်တာတွေ ဘာလို့ မှားတာလဲ?)<br>" +
+                 "  - ② 사업장 추가허가 (လုပ်ငန်းခွင် တိုးချဲ့ခွင့်ပြုချက်) - အလုပ်နေရာ တိုးချဲ့တာဖြစ်လို့ မမှန်ပါ။<br>" +
+                 "  - ③ 근무처 변경신고 (အလုပ်လုပ်သည့်နေရာ ပြောင်းလဲကြောင်း တိုင်ကြားခြင်း) - အလုပ်နေရာပြောင်းတာကို အကြောင်းကြားတာဖြစ်လို့ မမှန်ပါ။<br>" +
+                 "  - ④ 자진출국 신고 (မိမိဆန္ဒအလျောက် ပြန်လည်ထွက်ခွာကြောင်း တိုင်ကြားခြင်း) - ကိုယ့်သဘောနဲ့ကိုယ် ပြန်ဖို့လုပ်တာဖြစ်လို့ မမှန်ပါ။"
+        }
+    ];
+              let currentIndex = 0;
+    let userAns = [];
+    let studentName = "";
+    let studentPassport = "";
+    let studentSector = "";
+    let totalSeconds = 20 * 60;
+    let initialSeconds = totalSeconds;
+    let timerInterval = null;
+
+    function triggerExam() {
+        const nameInput = document.getElementById("username-field").value.trim();
+        const passportInput = document.getElementById("passport-field").value.trim();
+        const sectorInput = document.getElementById("sector-field").value;
+
+        if (!nameInput || !passportInput) {
+            alert("ကျေးဇူးပြု၍ နာမည်နှင့် Passport ကို ထည့်သွင်းပေးပါ။");
+            return;
+        }
+
+        studentName = nameInput;
+        studentPassport = passportInput;
+        studentSector = sectorInput;
+        userAns = Array(allQuestions.length).fill(null);
+
+        document.getElementById("welcome-screen").style.display = "none";
+        document.getElementById("exam-ui").style.display = "block";
+        
+        document.getElementById("header-user-info").textContent = `${studentName} | ${sectorInput.split(' ')[0]}`;
+
+        renderPalette();
+        loadQuestion(0);
+        startTimer();
+    }
+
+    function startTimer() {
+        const tEl = document.getElementById("timer");
+        timerInterval = setInterval(() => {
+            totalSeconds--;
+            let mins = Math.floor(totalSeconds / 60);
+            let secs = totalSeconds % 60;
+            tEl.textContent = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            
+            let percent = (totalSeconds / initialSeconds) * 100;
+            document.getElementById("p-bar").style.width = percent + "%";
+
+            if (totalSeconds <= 0) {
+                clearInterval(timerInterval);
+                finishExam();
+            }
+        }, 1000);
+    }
+
+    function renderPalette() {
+        const pal = document.getElementById("palette");
+        pal.innerHTML = "";
+        allQuestions.forEach((_, idx) => {
+            const dot = document.createElement("div");
+            dot.className = `q-dot ${idx === currentIndex ? 'active' : ''} ${userAns[idx] !== null ? 'done' : ''}`;
+            dot.textContent = idx + 1;
+            dot.onclick = () => loadQuestion(idx);
+            pal.appendChild(dot);
+        });
+    }
+
+    function loadQuestion(idx) {
+        currentIndex = idx;
+        document.getElementById("q-text").innerHTML = allQuestions[currentIndex].q;
+
+        const ansList = document.getElementById("ans-list");
+        ansList.innerHTML = "";
+        allQuestions[currentIndex].a.forEach((opt, optIdx) => {
+            const item = document.createElement("div");
+            item.className = `opt-item ${userAns[currentIndex] === optIdx ? 'active' : ''}`;
+            item.innerHTML = `<span class="opt-num">${optIdx + 1}</span> <span>${opt}</span>`;
+            item.onclick = () => selectOption(optIdx);
+            ansList.appendChild(item);
+        });
+        renderPalette();
+    }
+
+    function selectOption(optIdx) {
+        userAns[currentIndex] = optIdx;
+        loadQuestion(currentIndex);
+    }
+
+    function prevQ() { if (currentIndex > 0) loadQuestion(currentIndex - 1); }
+    function nextQ() { if (currentIndex < allQuestions.length - 1) loadQuestion(currentIndex + 1); }
+
+    function finishExam() {
+        let answeredCount = userAns.filter(ans => ans !== null).length;
+        if (answeredCount < allQuestions.length) {
+            if (!confirm(`မဖြေရသေးသော မေးခွန်းများ ကျန်ရှိနေပါသည်။ တင်သွင်းရန် သေချာပါသလား?`)) return;
+        }
+
+        clearInterval(timerInterval);
+        
+        let correctCount = 0;
+        allQuestions.forEach((item, i) => {
+            if (userAns[i] === item.c) correctCount++;
+        });
+
+        const finalScore = correctCount * 5;
+        
+        const timeUsedSec = initialSeconds - totalSeconds;
+        const usedMins = Math.floor(timeUsedSec / 60);
+        const usedSecs = timeUsedSec % 60;
+        const timeStr = `${usedMins.toString().padStart(2, '0')}m ${usedSecs.toString().padStart(2, '0')}s`;
+
+        document.getElementById("exam-ui").style.display = "none";
+        document.getElementById("result-screen").style.display = "block";
+        
+        document.getElementById("res-score").textContent = finalScore;
+        document.getElementById("res-name").textContent = studentName;
+        document.getElementById("res-passport").textContent = studentPassport;
+        document.getElementById("res-sector").textContent = studentSector;
+        document.getElementById("res-acc").textContent = `${correctCount} / 20 (${finalScore} မှတ်)`;
+        document.getElementById("res-time").textContent = timeStr;
+    }
+
+    function showReview() {
+        document.getElementById("result-screen").style.display = "none";
+        const reviewContainer = document.getElementById("review-screen");
+        const reviewContent = document.getElementById("review-content");
+        reviewContent.innerHTML = "";
+
+        allQuestions.forEach((item, idx) => {
+            const userPick = userAns[idx];
+            const isCorrect = userPick === item.c;
+            const card = document.createElement("div");
+            card.className = "review-card";
+            card.style.background = "#f8fafc";
+            card.style.border = "1px solid #e2e8f0";
+            card.style.borderRadius = "12px";
+            card.style.padding = "12px";
+            card.style.marginBottom = "10px";
+
+            let optsHTML = "";
+            item.a.forEach((opt, optIdx) => {
+                let optStyle = "padding:6px 10px; border-radius:6px; font-size:11px; margin-bottom:3px; display:flex; justify-content:space-between; border:1px solid #e2e8f0; background:#fff;";
+                let badge = "";
+                if (optIdx === item.c) {
+                    optStyle += " background:#dcfce7; border-color:#22c55e; color:#15803d; font-weight:800;";
+                    badge = `<span style="background:#22c55e; color:#fff; font-size:9px; padding:2px 5px; border-radius:4px;">အဖြေမှန်</span>`;
+                } else if (optIdx === userPick && !isCorrect) {
+                    optStyle += " background:#fee2e2; border-color:#ef4444; color:#b91c1c; font-weight:800;";
+                    badge = `<span style="background:#ef4444; color:#fff; font-size:9px; padding:2px 5px; border-radius:4px;">သင့်အဖြေ</span>`;
+                }
+                optsHTML += `<div style="${optStyle}"><span>${optIdx + 1}. ${opt}</span>${badge}</div>`;
+            });
+
+            card.innerHTML = `
+                <div style="font-size:12px; font-weight:700; color:#0f172a; margin-bottom:6px;">မေးခွန်း ${idx + 1} (5 မှတ်)။<br>${item.q}</div>
+                <div>${optsHTML}</div>
+            `;
+            reviewContent.appendChild(card);
+        });
+        reviewContainer.style.display = "block";
+    }
+
+    function closeReview() {
+        document.getElementById("review-screen").style.display = "none";
+        document.getElementById("result-screen").style.display = "block";
+    }
+
+    function showExplanationScreen() {
+        document.getElementById("result-screen").style.display = "none";
+        const screen = document.getElementById("explanation-screen");
+        const content = document.getElementById("explanation-content");
+        content.innerHTML = "";
+
+        allQuestions.forEach((item, idx) => {
+            const userPick = userAns[idx];
+            const isCorrect = userPick === item.c;
+            const itemDiv = document.createElement("div");
+            itemDiv.className = "exp-item";
+
+            let userChoiceText = userPick !== null ? `${userPick + 1}. ${item.a[userPick]}` : "မဖြေရသေးပါ";
+            let correctChoiceText = `${item.c + 1}. ${item.a[item.c]}`;
+
+            itemDiv.innerHTML = `
+                <div class="exp-q-title">မေးခွန်း ${idx + 1}</div>
+                <div><b>မေးခွန်း:</b> ${item.q}</div>
+                <div style="margin-top: 4px;"><b>သင့်အဖြေ:</b> <span class="${isCorrect ? 'exp-correct' : 'exp-wrong'}">${userChoiceText}</span></div>
+                <div style="margin-top: 2px;"><b>အမှန်:</b> <span class="exp-correct">${correctChoiceText}</span></div>
+                <div class="exp-detail">${item.exp}</div>
+            `;
+            content.appendChild(itemDiv);
+        });
+        screen.style.display = "block";
+    }
+
+    function closeExplanationScreen() {
+        document.getElementById("explanation-screen").style.display = "none";
+        document.getElementById("result-screen").style.display = "block";
+    }
+    </script>
+</body>
+</html>
